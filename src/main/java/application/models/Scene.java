@@ -3,6 +3,9 @@ package application.models;
 import javax.persistence.*;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 @Entity
 @Table(name = "scene")
@@ -16,7 +19,7 @@ public class Scene {
     private Projet projet;
 
     @ManyToOne(targetEntity = User.class)
-    @JoinColumn(name = "id_user")
+    @JoinColumn(name = "id_scenariste")
     private User user;
 
     @Column(name = "titre")
@@ -33,12 +36,18 @@ public class Scene {
 
     @Column(name = "fin_tournage_preferable")
     private Time finTournagePreferable;
+    @Column(name = "estimation_tournage")
+    private Time estimationTournage;
 
     @Column(name = "debut_tournage")
     private Timestamp debutTournage;
 
     @Column(name = "fin_tournage")
     private Timestamp finTournage;
+
+    @ManyToOne(targetEntity = Plateau.class)
+    @JoinColumn(name = "id_plateau")
+    private Plateau plateau;
 
     public int getIdScene() {
         return idScene;
@@ -118,5 +127,42 @@ public class Scene {
 
     public void setFinTournage(Timestamp finTournage) {
         this.finTournage = finTournage;
+    }
+
+    public Plateau getPlateau() {
+        return plateau;
+    }
+
+    public void setPlateau(Plateau plateau) {
+        this.plateau = plateau;
+    }
+
+    public Time getEstimationTournage() {
+        return estimationTournage;
+    }
+
+    public void setEstimationTournage(Time estimationTournage) {
+        this.estimationTournage = estimationTournage;
+    }
+
+    public static void orderByPreferableAsc(ArrayList<Scene> scene){
+        Comparator<Scene> comparateurPreferable=new Comparator<Scene>() {
+            @Override
+            public int compare(Scene c1, Scene c2) {
+                if(c1.getDebutTournagePreferable().compareTo(c2.getDebutTournagePreferable())==0)
+                    return c1.getFinTournagePreferable().compareTo(c2.getFinTournagePreferable());
+                return c1.getDebutTournagePreferable().compareTo(c2.getDebutTournagePreferable());
+            }
+        };
+        Collections.sort(scene,comparateurPreferable);
+    }
+    public static Scene firstSceneNotDate(ArrayList<Scene> scene){
+       Time t= scene.get(0).getDebutTournagePreferable();
+        int indice=0;
+        for(int r=0;r<scene.size();r++ ){
+            if(scene.get(r).getDebutTournage()!=null&&t.after(scene.get(r).getDebutTournagePreferable()))
+                indice=r;
+        }
+        return scene.get(indice);
     }
 }
