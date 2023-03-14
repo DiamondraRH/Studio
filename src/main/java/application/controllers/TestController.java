@@ -8,6 +8,6 @@ import org.springframework.web.servlet.ModelAndView;
 public class TestController {
     @GetMapping("/")
     public ModelAndView index() {
-        return new ModelAndView("index");
+        return new ModelAndView("valider-planning");
     }
 }

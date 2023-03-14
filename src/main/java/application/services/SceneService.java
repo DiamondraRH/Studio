@@ -1,4 +1,4 @@
-package application.service;
+package application.services;
 
 import application.data.HibernateDAO;
 import application.models.*;
@@ -13,6 +13,14 @@ import java.util.*;
 public class SceneService {
     @Autowired
     private HibernateDAO dao;
+
+    public void update(Scene scene) throws Exception {
+        dao.update(scene);
+    }
+
+    public Scene findById(String id) throws Exception {
+        return dao.findOneById(new Scene(),id);
+    }
 
     public  ArrayList<Scene> findByProject(Projet projet) throws Exception{
         ArrayList<Scene> ls=dao.findAll(new Scene());
@@ -59,7 +67,7 @@ public class SceneService {
                 sc.setDebutTournage(dt);
             else
                 sc.setDebutTournage(new Timestamp(dt.getYear(),dt.getMonth(),dt.getDate(),sc.getDebutTournagePreferable().getHours()
-                ,sc.getDebutTournagePreferable().getMinutes(),sc.getDebutTournagePreferable().getSeconds(),0));
+                        ,sc.getDebutTournagePreferable().getMinutes(),sc.getDebutTournagePreferable().getSeconds(),0));
             addDuration(sc);
             dt=sc.getFinTournage();
             duree=duree+sc.getEstimationTournage().getHours();
