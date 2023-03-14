@@ -49,7 +49,6 @@ public class SceneService {
                     }
                 }
             }
-            System.out.println(tour+" taille"+sugg.size());
         }
         return sugg;
     }
@@ -64,8 +63,8 @@ public class SceneService {
                 ,sc.getDebutTournagePreferable().getMinutes(),sc.getDebutTournagePreferable().getSeconds(),0));
             addDuration(sc);
             dt=sc.getFinTournage();
-            //scene.remove(sc);
-            duree=duree+sc.getDuration();
+            duree=duree+sc.getEstimationTournage().getHours();
+            duree=duree+(sc.getEstimationTournage().getMinutes()/60);
             sugg.add(sc);
             tour=0;
         }
