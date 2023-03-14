@@ -14,7 +14,7 @@ public class SceneService {
     @Autowired
     private HibernateDAO dao;
 
-    private ArrayList<Scene> findByProject(Projet projet) throws Exception{
+    public  ArrayList<Scene> findByProject(Projet projet) throws Exception{
         ArrayList<Scene> ls=dao.findAll(new Scene());
         ArrayList<Scene> turn=new ArrayList<>();
         for(Scene sc:ls){
@@ -23,10 +23,8 @@ public class SceneService {
         }
         return turn;
     }
-    public ArrayList<Scene> suggestion(Projet projet) throws  Exception{
-        ArrayList<Scene> liste=this.findByProject(projet);
+    public ArrayList<Scene> suggestion(ArrayList<Scene> liste,Timestamp debut,Timestamp fin) throws  Exception{
         ArrayList<Scene> sugg=new ArrayList<>();
-        Timestamp debut=projet.getDebutProduction();
         int tour=0;
         float duree=(float)0;
         HashMap<Plateau, ArrayList<Scene>> map=Plateau.sceneParPlateau(dao.findAll(new Plateau()),liste);
@@ -50,6 +48,7 @@ public class SceneService {
                 }
             }
         }
+        this.checkIsPossible(fin,sugg);
         return sugg;
     }
     private Object[] changeDateTournage(Scene sc,Timestamp dt,ArrayList<Scene> scene,ArrayList<Scene> sugg,float duree,int tour){
@@ -91,5 +90,10 @@ public class SceneService {
         cal.add(Calendar.MINUTE, sc.getEstimationTournage().getMinutes());
         cal.add(Calendar.HOUR,sc.getEstimationTournage().getHours());
         sc.setFinTournage(new Timestamp(cal.getTimeInMillis()));
+    }
+    private void checkIsPossible(Timestamp fin,ArrayList<Scene> scene)throws Exception{
+        Scene sc=scene.get(scene.size()-1);
+        if(sc.getFinTournage().after(fin))
+            throw new Exception("Emploie du temps surchargé");
     }
 }
