@@ -2,7 +2,6 @@ package application.service;
 
 import application.data.HibernateDAO;
 import application.models.*;
-import org.hibernate.annotations.Synchronize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,16 +13,22 @@ public class SceneService {
     @Autowired
     private HibernateDAO dao;
 
-    private ArrayList<Scene> findByProject(Projet projet) throws Exception{
+    private ArrayList<Scene> findByProject(Projet projet) throws Exception {
         ArrayList<Scene> ls=dao.findAll(new Scene());
         ArrayList<Scene> turn=new ArrayList<>();
-        for(Scene sc:ls){
-            if(sc.getProjet().getIdProjet()==projet.getIdProjet())
+        for (Scene sc : ls){
+            if (sc.getProjet().getIdProjet() == projet.getIdProjet())
                 turn.add(sc);
         }
+
         return turn;
     }
-    public ArrayList<Scene> suggestion(Projet projet) throws  Exception{
+
+    public List<Scene> findAllUnplannedScene() {
+        return dao.findAllUnplannedScene();
+    }
+
+    public ArrayList<Scene> suggestion(Projet projet) throws  Exception {
         ArrayList<Scene> liste=this.findByProject(projet);
         ArrayList<Scene> sugg=new ArrayList<>();
         Timestamp debut=projet.getDebutProduction();
@@ -50,9 +55,11 @@ public class SceneService {
                 }
             }
         }
+
         return sugg;
     }
-    private Object[] changeDateTournage(Scene sc,Timestamp dt,ArrayList<Scene> scene,ArrayList<Scene> sugg,float duree,int tour){
+
+    private Object[] changeDateTournage(Scene sc,Timestamp dt,ArrayList<Scene> scene,ArrayList<Scene> sugg,float duree,int tour) {
         Time last=new Time(dt.getHours(),dt.getMinutes(),dt.getSeconds());
         if(last.before(sc.getFinTournagePreferable())&&((duree+sc.getDuration())<=8.0)){
             if(last.after(sc.getDebutTournagePreferable())||last.compareTo(sc.getDebutTournagePreferable())==0||
@@ -72,9 +79,11 @@ public class SceneService {
         turn[0]=dt;
         turn[1]=duree;
         turn[2]=tour;
+
         return turn;
     }
-    private Timestamp changeDate(Timestamp last){
+
+    private Timestamp changeDate(Timestamp last) {
         Calendar cal=Calendar.getInstance();
         cal.setTimeInMillis(last.getTime());
         cal.add(Calendar.DAY_OF_MONTH,1);
@@ -82,9 +91,11 @@ public class SceneService {
         last.setHours(0);
         last.setMinutes(0);
         last.setSeconds(0);
+
         return last;
     }
-    private void addDuration(Scene sc){
+
+    private void addDuration(Scene sc) {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(sc.getDebutTournage().getTime());
         double reste=(double)sc.getDuration()-(int)sc.getDuration();

@@ -1,6 +1,8 @@
 package application.data;
 
 import application.data.generic.Order;
+import application.models.Scene;
+
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -12,9 +14,12 @@ import application.data.generic.*;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class HibernateDAO implements InterfaceDAO {
     public static final String RECHERCHE_RESULTS_KEY="results";
@@ -334,5 +339,20 @@ public class HibernateDAO implements InterfaceDAO {
     @Override
     public <T> Long count(T obj, String search, String... cols) throws Exception {
         return null;
+    }
+
+    
+    public List<Scene> findAllUnplannedScene() {
+        Session session = sessionFactory.openSession();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Scene> criteriaQuery = builder.createQuery(Scene.class);
+        // init query
+        Root<Scene> model = criteriaQuery.from(Scene.class);
+        // condition(s)
+        criteriaQuery.where(builder.isNull(model.get("debutTournage")));
+        // ordering
+        // criteriaQuery.orderBy(builder.desc(model.get("projet").get("id_projet")));
+        
+        return session.createQuery(criteriaQuery).getResultList();
     }
 }
