@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@taglib prefix="z" tagdir="/WEB-INF/tags" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <z:layout>
     <main class="h-full pb-16 overflow-y-auto">
         <div class="container px-6 mx-auto grid">
@@ -33,84 +34,41 @@
                                     <tbody
                                             class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800"
                                     >
-                                    <tr class="text-gray-700 dark:text-gray-400">
-                                        <td class="px-4 py-3">
-                                            <div>
-                                                <label class="flex items-center dark:text-gray-400">
-                                                    <input
-                                                            type="checkbox" checked
-                                                            class="text-purple-600 form-checkbox focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
-                                                    />
-                                                    <span class="ml-2 text-sm font-semibold">
-                                                    Titre scene
-                                                </span>
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="px-4 py-3 text-sm">
-                                            Plateau
-                                        </td>
-                                        <td class="px-4 py-3 text-sm">
-                                            29-03-2023 13:45:00
-                                        </td>
-                                        <td class="px-4 py-3 text-sm">
-                                            29-03-2023 14:45:00
-                                        </td>
-                                    </tr>
-                                    <tr class="text-gray-700 dark:text-gray-400">
-                                        <td class="px-4 py-3">
-                                            <div>
-                                                <label class="flex items-center dark:text-gray-400">
-                                                    <input
-                                                            type="checkbox" checked
-                                                            class="text-purple-600 form-checkbox focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
-                                                    />
-                                                    <span class="ml-2 text-sm font-semibold">
-                                                    Titre scene
-                                                </span>
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="px-4 py-3 text-sm">
-                                            Plateau
-                                        </td>
-                                        <td class="px-4 py-3 text-sm">
-                                            29-03-2023 13:45:00
-                                        </td>
-                                        <td class="px-4 py-3 text-sm">
-                                            29-03-2023 14:45:00
-                                        </td>
-                                    </tr>
-                                    <tr class="text-gray-700 dark:text-gray-400">
-                                        <td class="px-4 py-3">
-                                            <div>
-                                                <label class="flex items-center dark:text-gray-400">
-                                                    <input
-                                                            type="checkbox" checked name="scenes" value="idscene;debutTournage;finTournage"
-                                                            class="text-purple-600 form-checkbox focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
-                                                    />
-                                                    <span class="ml-2 text-sm font-semibold">
-                                                    Titre scene
-                                                </span>
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="px-4 py-3 text-sm">
-                                            Plateau
-                                        </td>
-                                        <td class="px-4 py-3 text-sm">
-                                            29-03-2023 13:45:00
-                                        </td>
-                                        <td class="px-4 py-3 text-sm">
-                                            29-03-2023 14:45:00
-                                        </td>
-                                    </tr>
+                                    <c:forEach items="${scenes}" var="scene">
+                                        <tr class="text-gray-700 dark:text-gray-400">
+                                            <td class="px-4 py-3">
+                                                <div>
+                                                    <label class="flex items-center dark:text-gray-400">
+                                                        <input
+                                                                type="checkbox"
+                                                                checked
+                                                                value="${scene.idScene};${scene.debutTournage};${scene.finTournage}"
+                                                                name="scenes"
+                                                                class="text-purple-600 form-checkbox focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+                                                        />
+                                                        <span class="ml-2 text-sm font-semibold">
+                                                                ${scene.titre}
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                                ${scene.plateau.lieu} (N°${scene.plateau.numero})
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                                ${scene.debutTournage}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                                ${scene.finTournage}
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                         <div class="py-4">
-                            <button
+                            <button type="submit"
                                     class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
                             >
                                 Valider

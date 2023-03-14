@@ -18,8 +18,9 @@ public class SceneService {
     }
 
     public Scene findById(String id) throws Exception {
-        return dao.findOneById(new Scene(),id);
+        return dao.findOneById(new Scene(),Integer.valueOf(id));
     }
+
 
     public  ArrayList<Scene> findByProject(Projet projet) throws Exception{
         ArrayList<Scene> ls=dao.findAll(new Scene());

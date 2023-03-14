@@ -165,4 +165,12 @@ public class Scene {
         }
         return scene.get(indice);
     }
+
+    public void setDebutTournage(String debutTournage) {
+        this.debutTournage = Timestamp.valueOf(debutTournage);
+    }
+    public void setFinTournage(String finTournage) {
+        this.finTournage = Timestamp.valueOf(finTournage);
+    }
+
 }

@@ -344,15 +344,21 @@ public class HibernateDAO implements InterfaceDAO {
     
     public List<Scene> findAllUnplannedScene() {
         Session session = sessionFactory.openSession();
-        CriteriaBuilder builder = session.getCriteriaBuilder();
-        CriteriaQuery<Scene> criteriaQuery = builder.createQuery(Scene.class);
-        // init query
-        Root<Scene> model = criteriaQuery.from(Scene.class);
-        // condition(s)
-        criteriaQuery.where(builder.isNull(model.get("debutTournage")));
-        // ordering
-        // criteriaQuery.orderBy(builder.desc(model.get("projet").get("id_projet")));
-        
-        return session.createQuery(criteriaQuery).getResultList();
+        List<Scene> sceneList = null;
+        try {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Scene> criteriaQuery = builder.createQuery(Scene.class);
+            // init query
+            Root<Scene> model = criteriaQuery.from(Scene.class);
+            // condition(s)
+            criteriaQuery.where(builder.isNull(model.get("debutTournage")));
+            // ordering
+            // criteriaQuery.orderBy(builder.desc(model.get("projet").get("id_projet")));
+            sceneList = session.createQuery(criteriaQuery).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return sceneList;
     }
 }

@@ -8,7 +8,7 @@ INSERT INTO genre(id_genre,libelle_genre) VALUES (1,'homme');
 INSERT INTO genre(id_genre,libelle_genre) VALUES (2,'femme');
 
 
-INSERT INTO users(username.password,id_role,id_genre,date_naissance) VALUES ('Jean','jean',1,1,'1999-10-12');
+INSERT INTO users(username,password,id_role,id_genre,date_naissance) VALUES ('Jean','jean',1,1,'1999-10-12');
 
 INSERT INTO projet(titre,debut_production,fin_production) VALUES ('film1','2023-03-13','2023-03-30');
 

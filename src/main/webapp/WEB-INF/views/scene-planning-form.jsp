@@ -1,5 +1,12 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@taglib prefix="z" tagdir="/WEB-INF/tags" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
 <z:layout>
-    <h2
+    <main class="h-full pb-16 overflow-y-auto">
+        <div class="container px-6 mx-auto grid">
+
+        <h2
         class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
     >
         Scenes Planning
@@ -9,14 +16,13 @@
     <div
         class="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800"
     >
-        <form action="" method="POST">
+        <form action="${pageContext.request.contextPath}/plannifier" method="POST">
             <label class="block text-sm mt-2">
                 <span class="text-gray-700 dark:text-gray-400">From</span>
                 <input
                     class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
                     type="date"
                     name="dateDebut"
-                    placeholder="Jane Doe"
                 />
             </label>
             <label class="block text-sm my-6">
@@ -25,7 +31,6 @@
                     class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
                     type="date"
                     name="dateFin"
-                    placeholder="Jane Doe"
                 />
             </label>
 
@@ -64,7 +69,7 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 text-sm">
-                                    ${scene.lieu} (N°${scene.numero})
+                                    ${scene.plateau.lieu} (N°${scene.plateau.numero})
                                 </td>
                                 <td class="px-4 py-3 text-sm">
                                     ${scene.estimationTournage}
@@ -94,7 +99,7 @@
                                                 Filmed
                                             </span>
                                         </c:when>
-                                    <c:choose/>
+                                    </c:choose>
                                 </td>
                             </tr>
                             </c:forEach>
@@ -113,4 +118,5 @@
             </div>
         </form>
     </div>
+        </div></main>
 </z:layout>
