@@ -4,10 +4,13 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+import application.models.Projet;
 import application.services.SceneService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.ModelAndView;
 import application.models.Scene;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,11 +55,12 @@ public class SceneController {
         ArrayList<Scene> planning = service.suggestion(scenes , Timestamp.valueOf(debut) , Timestamp.valueOf(fin));
         ModelAndView modelAndView = new ModelAndView("valider-planning");
         modelAndView.addObject("scenes" , planning);
+        modelAndView.addObject("events",Scene.toJSONCallendar(planning));
         return modelAndView;
     }
 
     @PostMapping("/validerPlanning")
-    public ModelAndView validerPlanning(HttpServletRequest request) throws Exception {
+    public String validerPlanning(HttpServletRequest request) throws Exception {
         String[] scenes = request.getParameterValues("scenes");
 
         for (int i = 0; i < scenes.length; i++) {
@@ -68,6 +72,8 @@ public class SceneController {
         }
 
         //redirect To Main Calendar
-        return new ModelAndView();
+        return "redirect:/projets/planning/1";
     }
+
+
 }

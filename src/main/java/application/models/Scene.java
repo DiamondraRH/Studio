@@ -1,15 +1,22 @@
 package application.models;
 
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Restrictions;
+
 import javax.persistence.*;
+import java.lang.reflect.Constructor;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.function.Consumer;
 
 @Entity
 @Table(name = "scene")
 public class Scene {
+    private static final String EVENT_FORMAT="{title:'%s',start:'%s',end:'%s',color:'blue'}";
     @Id
     @Column(name = "id_scene")
     private int idScene;
@@ -145,6 +152,11 @@ public class Scene {
         this.estimationTournage = estimationTournage;
     }
 
+    private static String getTimestampToString(Timestamp timestamp){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        return dateFormat.format(timestamp);
+    }
+
     public static void orderByPreferableAsc(ArrayList<Scene> scene){
         Comparator<Scene> comparateurPreferable=new Comparator<Scene>() {
             @Override
@@ -173,4 +185,53 @@ public class Scene {
         this.finTournage = Timestamp.valueOf(finTournage);
     }
 
+    public String toJSONCallendar(){
+        return String.format(EVENT_FORMAT,this.getTitre(),getTimestampToString(this.getDebutTournage()),getTimestampToString(this.getFinTournage()));
+    }
+
+    public Consumer<String> getJSONConsumer(){
+        return (String json)-> this.toJSONCallendar();
+    }
+
+    public static String toJSONCallendar(Iterable<Scene> scenes){
+        String result="[%s]";
+        final String[] json = {""};
+        scenes.forEach((scene)-> json[0] = json[0].concat(scene.toJSONCallendar()).concat(","));
+        return String.format(result, json[0]);
+    }
+
+    public static String toJSONCallendar(Scene... scenes){
+        String result="[%s]";
+        StringBuilder json= new StringBuilder();
+        for (Scene scene : scenes) {
+            json.append(scene.toJSONCallendar());
+        }
+        return String.format(result, json.toString());
+    }
+
+    public static Criterion getConditionUnplanned(){
+        return Restrictions.and(Restrictions.isNotNull("debutTournage"),Restrictions.isNotNull("finTournage"));
+    }
+
+    public static Criterion getConditionNotUnplanned(){
+        return Restrictions.and(Restrictions.isNotNull("debutTournage"),Restrictions.isNotNull("finTournage"));
+    }
+
+    @Override
+    public String toString() {
+        return "Scene{" +
+                "idScene=" + idScene +
+                ", projet=" + projet +
+                ", user=" + user +
+                ", titre='" + titre + '\'' +
+                ", ordre=" + ordre +
+                ", duration=" + duration +
+                ", debutTournagePreferable=" + debutTournagePreferable +
+                ", finTournagePreferable=" + finTournagePreferable +
+                ", estimationTournage=" + estimationTournage +
+                ", debutTournage=" + debutTournage +
+                ", finTournage=" + finTournage +
+                ", plateau=" + plateau +
+                '}';
+    }
 }

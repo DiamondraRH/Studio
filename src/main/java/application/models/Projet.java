@@ -1,5 +1,8 @@
 package application.models;
 
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Restrictions;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -8,7 +11,7 @@ import java.sql.Timestamp;
 public class Projet {
     @Id
     @Column(name = "id_projet")
-    private int idProjet;
+    private Integer idProjet;
 
     @Column(name = "titre")
     private String titre;
@@ -19,11 +22,11 @@ public class Projet {
     @Column(name = "fin_production")
     private Timestamp finProduction;
 
-    public int getIdProjet() {
+    public Integer getIdProjet() {
         return idProjet;
     }
 
-    public void setIdProjet(int idProjet) {
+    public void setIdProjet(Integer idProjet) {
         this.idProjet = idProjet;
     }
 
@@ -49,5 +52,28 @@ public class Projet {
 
     public void setFinProduction(Timestamp finProduction) {
         this.finProduction = finProduction;
+    }
+
+    public Criterion getConditionIdProject(){
+        return Restrictions.eq("projet",this.getIdProjet());
+    }
+
+
+
+    public Criterion getConditionScenesNotUnplanned(){
+        return Restrictions.and(getConditionIdProject(),Scene.getConditionUnplanned());
+//        return null;
+    }
+
+    public Criterion getConditionScenesPlanned(){
+        return getConditionIdProject();
+//        return Restrictions.and(getConditionIdProject(),Scene.getConditionUnplanned());
+//        return null;
+    }
+
+    public Scene provideSceneWithProject(){
+        Scene scene=new Scene();
+        scene.setProjet(this);
+        return scene;
     }
 }

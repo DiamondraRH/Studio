@@ -3,6 +3,7 @@ package application.data.generic;
 import java.util.ArrayList;
 import java.util.HashMap;
 import application.data.generic.Order;
+import org.hibernate.criterion.Criterion;
 
 public interface InterfaceDAO {
 
@@ -22,6 +23,7 @@ public interface InterfaceDAO {
 
     public <T> ArrayList<T> find(T obj) throws Exception;
     public <T> ArrayList<T> find(T obj,boolean orClause) throws Exception;
+    public <T> ArrayList<T> find(T obj, Object condition) throws Exception;
     public <T> ArrayList<T> findOrClause(T obj,String search,String... cols) throws Exception;
     public <T> ArrayList<T> findOrClause(T obj,int page,int pageSize,String search,String... cols) throws Exception;
     public <T> HashMap<String,Object> findOrClauseWithRowCount(T obj, int page, int pageSize, String search, String... cols) throws Exception;
