@@ -33,8 +33,9 @@ public class SceneService {
         return turn;
     }
 
-    public List<Scene> findAllUnplannedScene() {
-        return dao.findAllUnplannedScene();
+    public ArrayList<Scene> findAllUnplannedScene() {
+
+        return (ArrayList<Scene>) dao.findAllUnplannedScene();
     }
 
     public ArrayList<Scene> suggestion(ArrayList<Scene> liste,Timestamp debut,Timestamp fin) throws  Exception{
