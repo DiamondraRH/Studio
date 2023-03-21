@@ -1,11 +1,15 @@
-package application.service;
+package application.services;
 
 import application.data.HibernateDAO;
 import application.models.*;
-import org.hibernate.annotations.Synchronize;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.sql.*;
 import java.util.*;
 
@@ -23,6 +27,75 @@ public class SceneService {
         }
         return turn;
     }
+
+    public List<Scene> findAllUnplannedScene() {
+        Session session = dao.getSessionFactory().openSession();
+        List<Scene> sceneList = null;
+        try {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Scene> criteriaQuery = builder.createQuery(Scene.class);
+            // init query
+            Root<Scene> model = criteriaQuery.from(Scene.class);
+            // condition(s)
+            criteriaQuery.where(builder.isNull(model.get("debutTournage")));
+            // ordering
+            // criteriaQuery.orderBy(builder.desc(model.get("projet").get("id_projet")));
+            sceneList = session.createQuery(criteriaQuery).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) session.close();
+        }
+
+        return sceneList;
+    }
+
+    public List<IndisponibilitePlateau> findAllIndisponibilitePlateauBetween(Timestamp dateDebut, Timestamp dateFin) {
+        Session session = dao.getSessionFactory().openSession();
+        List<IndisponibilitePlateau> indisponibilitePlateauList = null;
+        try {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<IndisponibilitePlateau> criteriaQuery = builder.createQuery(IndisponibilitePlateau.class);
+            // init query
+            Root<IndisponibilitePlateau> model = criteriaQuery.from(IndisponibilitePlateau.class);
+            // condition(s)
+            Predicate greaterThanOrEqualToDateDebut = builder.greaterThanOrEqualTo(model.get("dateDebut"), dateDebut);
+            Predicate lesserThanOrEqualToDateFin = builder.lessThanOrEqualTo(model.get("dateFin"), dateFin);
+            criteriaQuery.select(model).where(builder.and(greaterThanOrEqualToDateDebut, lesserThanOrEqualToDateFin));
+            //fetch result
+            indisponibilitePlateauList = session.createQuery(criteriaQuery).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) session.close();
+        }
+
+        return indisponibilitePlateauList;
+    }
+
+    public List<IndisponibiliteActeur> findAllIndisponibiliteActeurBetween(Timestamp dateDebut, Timestamp dateFin) {
+        Session session = dao.getSessionFactory().openSession();
+        List<IndisponibiliteActeur> indisponibiliteActeurList = null;
+        try {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<IndisponibiliteActeur> criteriaQuery = builder.createQuery(IndisponibiliteActeur.class);
+            // init query
+            Root<IndisponibiliteActeur> model = criteriaQuery.from(IndisponibiliteActeur.class);
+            // condition(s)
+            Predicate greaterThanOrEqualToDateDebut = builder.greaterThanOrEqualTo(model.get("dateDebut"), dateDebut);
+            Predicate lesserThanOrEqualToDateFin = builder.lessThanOrEqualTo(model.get("dateFin"), dateFin);
+            criteriaQuery.select(model).where(builder.and(greaterThanOrEqualToDateDebut, lesserThanOrEqualToDateFin));
+            // fetch result
+            indisponibiliteActeurList = session.createQuery(criteriaQuery).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) session.close();
+        }
+
+        return indisponibiliteActeurList;
+    }
+
     public ArrayList<Scene> suggestion(ArrayList<Scene> liste,Timestamp debut,Timestamp fin) throws  Exception{
         debut=checkWeekEnd(debut);
         ArrayList<Scene> sugg=new ArrayList<>();

@@ -31,8 +31,7 @@ CREATE TABLE personnage (
     id_personnage       SERIAL NOT NULL PRIMARY KEY,
     id_projet           INTEGER NOT NULL REFERENCES projet (id_projet),
     id_acteur           INTEGER NOT NULL REFERENCES users (id_user),
-    nom                 VARCHAR(100),
-    UNIQUE (id_projet, id_acteur)
+    nom                 VARCHAR(100)
 );
 
 CREATE TABLE type_plateau (
@@ -62,6 +61,11 @@ CREATE TABLE scene (
     fin_tournage_preferable     TIME,
     debut_tournage              TIMESTAMP,
     fin_tournage                TIMESTAMP
+);
+
+CREATE TABLE personnage_scene (
+    id_personnage       INTEGER NOT NULL REFERENCES personnage (id_personnage),
+    id_scene            INTEGER NOT NULL REFERENCES scene (id_scene)
 );
 
 CREATE TABLE dialogue (

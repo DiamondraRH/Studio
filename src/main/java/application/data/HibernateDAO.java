@@ -340,25 +340,4 @@ public class HibernateDAO implements InterfaceDAO {
     public <T> Long count(T obj, String search, String... cols) throws Exception {
         return null;
     }
-
-    
-    public List<Scene> findAllUnplannedScene() {
-        Session session = sessionFactory.openSession();
-        List<Scene> sceneList = null;
-        try {
-            CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<Scene> criteriaQuery = builder.createQuery(Scene.class);
-            // init query
-            Root<Scene> model = criteriaQuery.from(Scene.class);
-            // condition(s)
-            criteriaQuery.where(builder.isNull(model.get("debutTournage")));
-            // ordering
-            // criteriaQuery.orderBy(builder.desc(model.get("projet").get("id_projet")));
-            sceneList = session.createQuery(criteriaQuery).getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return sceneList;
-    }
 }
