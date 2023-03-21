@@ -19,7 +19,7 @@ public class User {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_role", nullable = false)
-    private Role idRole;
+    private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_genre", nullable = false)
@@ -44,12 +44,12 @@ public class User {
         this.idGenre = idGenre;
     }
 
-    public Role getIdRole() {
-        return idRole;
+    public Role getRole() {
+        return role;
     }
 
-    public void setIdRole(Role idRole) {
-        this.idRole = idRole;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public String getPassword() {

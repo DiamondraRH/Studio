@@ -72,3 +72,17 @@ CREATE TABLE dialogue (
     dialogue            TEXT,
     "action"            TEXT
 );
+
+CREATE TABLE indisponibilite_plateau (
+    id_plateau          SMALLINT NOT NULL REFERENCES plateau (id_plateau),
+    motif               VARCHAR(255),
+    date_debut          TIMESTAMP NOT NULL,
+    date_fin            TIMESTAMP
+);
+
+CREATE TABLE indisponibilite_acteur (
+    id_acteur           SMALLINT NOT NULL REFERENCES users (id_user),
+    motif               VARCHAR(255),
+    date_debut          TIMESTAMP NOT NULL,
+    date_fin            TIMESTAMP
+);
