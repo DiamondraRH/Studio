@@ -1,7 +1,8 @@
-package application.services;
+package application.service;
 
 import application.data.HibernateDAO;
 import application.models.*;
+import org.hibernate.annotations.Synchronize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,31 +14,17 @@ public class SceneService {
     @Autowired
     private HibernateDAO dao;
 
-    public void update(Scene scene) throws Exception {
-        dao.update(scene);
-    }
-
-    public Scene findById(String id) throws Exception {
-        return dao.findOneById(new Scene(),Integer.valueOf(id));
-    }
-
-
     public  ArrayList<Scene> findByProject(Projet projet) throws Exception{
         ArrayList<Scene> ls=dao.findAll(new Scene());
         ArrayList<Scene> turn=new ArrayList<>();
-        for (Scene sc : ls){
-            if (sc.getProjet().getIdProjet() == projet.getIdProjet())
+        for(Scene sc:ls){
+            if(sc.getProjet().getIdProjet()==projet.getIdProjet())
                 turn.add(sc);
         }
-
         return turn;
     }
-
-    public List<Scene> findAllUnplannedScene() {
-        return dao.findAllUnplannedScene();
-    }
-
     public ArrayList<Scene> suggestion(ArrayList<Scene> liste,Timestamp debut,Timestamp fin) throws  Exception{
+        debut=checkWeekEnd(debut);
         ArrayList<Scene> sugg=new ArrayList<>();
         int tour=0;
         float duree=(float)0;
@@ -54,7 +41,7 @@ public class SceneService {
                 ArrayList<Scene> ls=map.get(p);
                 for(Scene sc: ls){
                     if(sc.getDebutTournage()==null) {
-                        Object[] ob=changeDateTournage(sc, debut, ls, sugg, duree,tour);
+                        Object[] ob=changeDateTournage(sc, debut, sugg, duree,tour);
                         debut=(Timestamp) ob[0];
                         duree=(float)ob[1];
                         tour=(int)ob[2];
@@ -65,10 +52,15 @@ public class SceneService {
         this.checkIsPossible(fin,sugg);
         return sugg;
     }
-
-    private Object[] changeDateTournage(Scene sc,Timestamp dt,ArrayList<Scene> scene,ArrayList<Scene> sugg,float duree,int tour) {
+    private Object[] changeDateTournage(Scene sc,Timestamp dt,ArrayList<Scene> sugg,float duree,int tour) throws Exception{
+        ArrayList<IndisponibilitePlateau> iPlateau=dao.findAll(new IndisponibilitePlateau());
+        ArrayList<IndisponibiliteActeur> iActeur=dao.findAll(new IndisponibiliteActeur());
+        ArrayList<Personnage> acteur=dao.findAll(new Personnage());
         Time last=new Time(dt.getHours(),dt.getMinutes(),dt.getSeconds());
-        if(last.before(sc.getFinTournagePreferable())&&((duree+sc.getDuration())<=8.0)){
+        float duration=sc.getEstimationTournage().getHours();
+        duration=duration+(sc.getEstimationTournage().getMinutes()/60);
+        if(last.before(sc.getFinTournagePreferable())&&((duree+duration)<=8.0)&&
+                dispoActeur(dt,iActeur,acteur)==false&&dispoPlateau(dt,iPlateau,sc.getPlateau())==false){
             if(last.after(sc.getDebutTournagePreferable())||last.compareTo(sc.getDebutTournagePreferable())==0||
                     sc.getDebutTournagePreferable()==null)
                 sc.setDebutTournage(dt);
@@ -77,8 +69,7 @@ public class SceneService {
                         ,sc.getDebutTournagePreferable().getMinutes(),sc.getDebutTournagePreferable().getSeconds(),0));
             addDuration(sc);
             dt=sc.getFinTournage();
-            duree=duree+sc.getEstimationTournage().getHours();
-            duree=duree+(sc.getEstimationTournage().getMinutes()/60);
+            duree=duree+duration;
             sugg.add(sc);
             tour=0;
         }
@@ -86,23 +77,16 @@ public class SceneService {
         turn[0]=dt;
         turn[1]=duree;
         turn[2]=tour;
-
         return turn;
     }
-
-    private Timestamp changeDate(Timestamp last) {
+    private Timestamp changeDate(Timestamp last){
         Calendar cal=Calendar.getInstance();
         cal.setTimeInMillis(last.getTime());
         cal.add(Calendar.DAY_OF_MONTH,1);
         last=new Timestamp(cal.getTimeInMillis());
-        last.setHours(0);
-        last.setMinutes(0);
-        last.setSeconds(0);
-
-        return last;
+        return checkWeekEnd(last);
     }
-
-    private void addDuration(Scene sc) {
+    private void addDuration(Scene sc){
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(sc.getDebutTournage().getTime());
         double reste=(double)sc.getDuration()-(int)sc.getDuration();
@@ -110,9 +94,36 @@ public class SceneService {
         cal.add(Calendar.HOUR,sc.getEstimationTournage().getHours());
         sc.setFinTournage(new Timestamp(cal.getTimeInMillis()));
     }
+    private Timestamp checkWeekEnd(Timestamp tp){
+        Calendar cal=Calendar.getInstance();
+        cal.setTimeInMillis(tp.getTime());
+        while(cal.get(Calendar.DAY_OF_WEEK)==7||cal.get(Calendar.DAY_OF_WEEK)==1)
+            cal.add(Calendar.DAY_OF_MONTH,1);
+        tp=new Timestamp(cal.getTimeInMillis());
+        tp.setHours(0);
+        tp.setMinutes(0);
+        tp.setSeconds(0);
+        return tp;
+    }
     private void checkIsPossible(Timestamp fin,ArrayList<Scene> scene)throws Exception{
         Scene sc=scene.get(scene.size()-1);
         if(sc.getFinTournage().after(fin))
             throw new Exception("Emploie du temps surchargé");
+    }
+    private boolean dispoPlateau(Timestamp tm,ArrayList<IndisponibilitePlateau> pl,Plateau plateau){
+        for(IndisponibilitePlateau p:pl){
+            if(p.getDateDebut().before(tm)&&p.getDateFin().after(tm)&&plateau.getIdPlateau()==p.getIdPlateau())
+                return false;
+        }
+        return true;
+    }
+    private boolean dispoActeur(Timestamp tm,ArrayList<IndisponibiliteActeur> ac,ArrayList<Personnage> acteur){
+        for(Personnage pc:acteur ){
+            for(IndisponibiliteActeur p:ac){
+                if(p.getIdActeur()==pc.getIdActeur()&&p.getDateDebut().before(tm)&&p.getDateFin().after(tm))
+                    return false;
+            }
+        }
+        return true;
     }
 }
