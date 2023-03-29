@@ -231,23 +231,6 @@ public class HibernateDAO implements InterfaceDAO {
     }
 
     @Override
-    public <T> ArrayList<T> find(T obj, Object condition) throws Exception {
-        Session s=null;
-        Criterion criterion=null;
-        try {
-            s=getSession();
-            if (condition instanceof Criterion) {
-                criterion=(Criterion) condition;
-            }
-            Criteria criteria_result=s.createCriteria(obj.getClass());
-            if (condition!=null) criteria_result=criteria_result.add(criterion);
-            return (ArrayList<T>) criteria_result.list();
-        }catch (Exception e){
-            throw e;
-        }
-    }
-
-    @Override
     public <T> ArrayList<T> find(T obj) throws Exception {
         return find(obj, false);
     }
@@ -371,26 +354,5 @@ public class HibernateDAO implements InterfaceDAO {
     @Override
     public <T> Long count(T obj, String search, String... cols) throws Exception {
         return null;
-    }
-
-    
-    public List<Scene> findAllUnplannedScene() {
-        Session session = sessionFactory.openSession();
-        List<Scene> sceneList = null;
-        try {
-            CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<Scene> criteriaQuery = builder.createQuery(Scene.class);
-            // init query
-            Root<Scene> model = criteriaQuery.from(Scene.class);
-            // condition(s)
-            criteriaQuery.where(builder.isNull(model.get("debutTournage")));
-            // ordering
-            // criteriaQuery.orderBy(builder.desc(model.get("projet").get("id_projet")));
-            sceneList = session.createQuery(criteriaQuery).getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return sceneList;
     }
 }

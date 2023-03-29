@@ -26,6 +26,17 @@ public class Dialogue {
     @Column(name = "action")
     private String action;
 
+    @Column(name = "id_scene" , insertable = false , updatable = false)
+    private int idScene;
+
+    public int getIdScene() {
+        return idScene;
+    }
+
+    public void setIdScene(int idScene) {
+        this.idScene = idScene;
+    }
+
     public int getIdDialogue() {
         return idDialogue;
     }

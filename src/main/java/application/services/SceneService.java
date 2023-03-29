@@ -2,9 +2,14 @@ package application.services;
 
 import application.data.HibernateDAO;
 import application.models.*;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.sql.*;
 import java.util.*;
 
@@ -15,12 +20,73 @@ public class SceneService {
 
     public void validate(Scene scene) throws Exception {
         update(scene);
+
         IndisponibilitePlateau indisponibilitePlateau = new IndisponibilitePlateau();
         indisponibilitePlateau.setIdPlateau(scene.getPlateau().getIdPlateau());
         indisponibilitePlateau.setDateDebut(scene.getDebutTournage());
         indisponibilitePlateau.setDateFin(scene.getFinTournage());
         indisponibilitePlateau.setMotif("tournage");
         dao.save(indisponibilitePlateau);
+
+        List<Personnage> personnages = findActorByScene(scene.getIdScene());
+        IndisponibiliteActeur indisponibiliteActeur;
+        for(Personnage p : personnages) {
+            indisponibiliteActeur = new IndisponibiliteActeur();
+            indisponibiliteActeur.setIdActeur(p.getIdActeur());
+            indisponibiliteActeur.setDateDebut(scene.getDebutTournage());
+            indisponibiliteActeur.setDateFin(scene.getFinTournage());
+            indisponibiliteActeur.setMotif("tournage");
+            dao.save(indisponibiliteActeur);
+        }
+    }
+
+    private List<Personnage> findActorByScene(int idScene) {
+        Session session = dao.getSessionFactory().openSession();
+        List<Personnage> personnages = null;
+
+        try {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Personnage> criteriaQuery = builder.createQuery(Personnage.class);
+            // init query
+            Root<Personnage> model = criteriaQuery.from(Personnage.class);
+
+            criteriaQuery.where((model.get("idPersonnage").in(idPersonnagesByScene(idScene))));
+            personnages = session.createQuery(criteriaQuery).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) session.close();
+        }
+
+        return personnages;
+    }
+
+    private List<ScenePersonnage> findPersonnageByScene(int idScene) {
+        Session session = dao.getSessionFactory().openSession();
+        List<ScenePersonnage> scenePersonnages = null;
+        try {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<ScenePersonnage> criteriaQuery = builder.createQuery(ScenePersonnage.class);
+            // init query
+            Root<ScenePersonnage> model = criteriaQuery.from(ScenePersonnage.class);
+            criteriaQuery.where(builder.equal(model.get("idScene"),idScene));
+            scenePersonnages = session.createQuery(criteriaQuery).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) session.close();
+        }
+
+        return scenePersonnages;
+    }
+
+    private List<Integer> idPersonnagesByScene(int idScene) {
+        List<ScenePersonnage> scenePersonnages = findPersonnageByScene(idScene);
+        List<Integer> ids = new ArrayList<>();
+        for (ScenePersonnage d: scenePersonnages) {
+            ids.add(d.getIdPersonnage());
+        }
+        return ids;
     }
 
     public void update(Scene scene) throws Exception {
@@ -55,17 +121,79 @@ public class SceneService {
     public  ArrayList<Scene> findByProject(Projet projet) throws Exception{
         ArrayList<Scene> ls=dao.findAll(new Scene());
         ArrayList<Scene> turn=new ArrayList<>();
-        for (Scene sc : ls){
-            if (sc.getProjet().getIdProjet() == projet.getIdProjet())
+        for(Scene sc:ls){
+            if(sc.getProjet().getIdProjet()==projet.getIdProjet())
                 turn.add(sc);
         }
-
         return turn;
     }
 
-    public ArrayList<Scene> findAllUnplannedScene() {
+    public List<Scene> findAllUnplannedScene() {
+        Session session = dao.getSessionFactory().openSession();
+        List<Scene> sceneList = null;
+        try {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Scene> criteriaQuery = builder.createQuery(Scene.class);
+            // init query
+            Root<Scene> model = criteriaQuery.from(Scene.class);
+            // condition(s)
+            criteriaQuery.where(builder.isNull(model.get("debutTournage")));
+            // ordering
+            // criteriaQuery.orderBy(builder.desc(model.get("projet").get("id_projet")));
+            sceneList = session.createQuery(criteriaQuery).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) session.close();
+        }
 
-        return (ArrayList<Scene>) dao.findAllUnplannedScene();
+        return sceneList;
+    }
+
+    public List<IndisponibilitePlateau> findAllIndisponibilitePlateauBetween(Timestamp dateDebut, Timestamp dateFin) {
+        Session session = dao.getSessionFactory().openSession();
+        List<IndisponibilitePlateau> indisponibilitePlateauList = null;
+        try {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<IndisponibilitePlateau> criteriaQuery = builder.createQuery(IndisponibilitePlateau.class);
+            // init query
+            Root<IndisponibilitePlateau> model = criteriaQuery.from(IndisponibilitePlateau.class);
+            // condition(s)
+            Predicate greaterThanOrEqualToDateDebut = builder.greaterThanOrEqualTo(model.get("dateDebut"), dateDebut);
+            Predicate lesserThanOrEqualToDateFin = builder.lessThanOrEqualTo(model.get("dateFin"), dateFin);
+            criteriaQuery.select(model).where(builder.and(greaterThanOrEqualToDateDebut, lesserThanOrEqualToDateFin));
+            //fetch result
+            indisponibilitePlateauList = session.createQuery(criteriaQuery).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) session.close();
+        }
+
+        return indisponibilitePlateauList;
+    }
+
+    public List<IndisponibiliteActeur> findAllIndisponibiliteActeurBetween(Timestamp dateDebut, Timestamp dateFin) {
+        Session session = dao.getSessionFactory().openSession();
+        List<IndisponibiliteActeur> indisponibiliteActeurList = null;
+        try {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<IndisponibiliteActeur> criteriaQuery = builder.createQuery(IndisponibiliteActeur.class);
+            // init query
+            Root<IndisponibiliteActeur> model = criteriaQuery.from(IndisponibiliteActeur.class);
+            // condition(s)
+            Predicate greaterThanOrEqualToDateDebut = builder.greaterThanOrEqualTo(model.get("dateDebut"), dateDebut);
+            Predicate lesserThanOrEqualToDateFin = builder.lessThanOrEqualTo(model.get("dateFin"), dateFin);
+            criteriaQuery.select(model).where(builder.and(greaterThanOrEqualToDateDebut, lesserThanOrEqualToDateFin));
+            // fetch result
+            indisponibiliteActeurList = session.createQuery(criteriaQuery).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) session.close();
+        }
+
+        return indisponibiliteActeurList;
     }
 
     public ArrayList<Scene> suggestion(ArrayList<Scene> liste,Timestamp debut,Timestamp fin) throws  Exception{
@@ -115,8 +243,7 @@ public class SceneService {
                         ,sc.getDebutTournagePreferable().getMinutes(),sc.getDebutTournagePreferable().getSeconds(),0));
             addDuration(sc);
             dt=sc.getFinTournage();
-            duree=duree+sc.getEstimationTournage().getHours();
-            duree=duree+(sc.getEstimationTournage().getMinutes()/60);
+            duree=duree+duration;
             sugg.add(sc);
             tour=0;
         }
@@ -124,7 +251,6 @@ public class SceneService {
         turn[0]=dt;
         turn[1]=duree;
         turn[2]=tour;
-
         return turn;
     }
 
@@ -133,20 +259,26 @@ public class SceneService {
         cal.setTimeInMillis(last.getTime());
         cal.add(Calendar.DAY_OF_MONTH,1);
         last=new Timestamp(cal.getTimeInMillis());
-        last.setHours(0);
-        last.setMinutes(0);
-        last.setSeconds(0);
-
-        return last;
+        return checkWeekEnd(last);
     }
-
-    private void addDuration(Scene sc) {
+    private void addDuration(Scene sc){
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(sc.getDebutTournage().getTime());
         double reste=(double)sc.getDuration()-(int)sc.getDuration();
         cal.add(Calendar.MINUTE, sc.getEstimationTournage().getMinutes());
         cal.add(Calendar.HOUR,sc.getEstimationTournage().getHours());
         sc.setFinTournage(new Timestamp(cal.getTimeInMillis()));
+    }
+    private Timestamp checkWeekEnd(Timestamp tp){
+        Calendar cal=Calendar.getInstance();
+        cal.setTimeInMillis(tp.getTime());
+        while(cal.get(Calendar.DAY_OF_WEEK)==Calendar.SATURDAY||cal.get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY)
+            cal.add(Calendar.DAY_OF_MONTH,1);
+        tp=new Timestamp(cal.getTimeInMillis());
+        tp.setHours(0);
+        tp.setMinutes(0);
+        tp.setSeconds(0);
+        return tp;
     }
     private void checkIsPossible(Timestamp fin,ArrayList<Scene> scene)throws Exception{
         Scene sc=scene.get(scene.size()-1);

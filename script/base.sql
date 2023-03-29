@@ -1,6 +1,8 @@
 DROP DATABASE IF EXISTS studio;
 CREATE DATABASE studio;
 
+\c studio
+
 CREATE TABLE genre (
     id_genre        SMALLINT NOT NULL PRIMARY KEY,
     libelle_genre   VARCHAR(5) NOT NULL
@@ -65,9 +67,9 @@ CREATE TABLE scene (
 );
 
 CREATE TABLE scene_personnage (
-    id_scene            INTEGER NOT NULL REFERENCES scene (id_scene),
-    id_personnage       INTEGER NOT NULL REFERENCES personnage (id_personnage)
-);
+                                   id_scene            INTEGER NOT NULL REFERENCES scene (id_scene),
+                                   id_personnage       INTEGER NOT NULL REFERENCES personnage (id_personnage)
+ );
 
 CREATE TABLE dialogue (
     id_dialogue         SERIAL NOT NULL PRIMARY KEY,
@@ -76,4 +78,18 @@ CREATE TABLE dialogue (
     id_personnage       INTEGER NOT NULL REFERENCES personnage (id_personnage),
     dialogue            TEXT,
     "action"            TEXT
+);
+
+CREATE TABLE indisponibilite_plateau (
+                                         id_plateau          SMALLINT NOT NULL REFERENCES plateau (id_plateau),
+                                         motif               VARCHAR(255),
+                                         date_debut          TIMESTAMP NOT NULL,
+                                         date_fin            TIMESTAMP
+);
+
+CREATE TABLE indisponibilite_acteur (
+                                        id_acteur           SMALLINT NOT NULL REFERENCES users (id_user),
+                                        motif               VARCHAR(255),
+                                        date_debut          TIMESTAMP NOT NULL,
+                                        date_fin            TIMESTAMP
 );
