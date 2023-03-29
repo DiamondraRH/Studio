@@ -64,6 +64,11 @@ CREATE TABLE scene (
     fin_tournage                TIMESTAMP
 );
 
+CREATE TABLE scene_personnage (
+    id_scene            INTEGER NOT NULL REFERENCES scene (id_scene),
+    id_personnage       INTEGER NOT NULL REFERENCES personnage (id_personnage)
+);
+
 CREATE TABLE dialogue (
     id_dialogue         SERIAL NOT NULL PRIMARY KEY,
     ordre               SMALLINT,
