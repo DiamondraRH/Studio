@@ -13,6 +13,16 @@ public class SceneService {
     @Autowired
     private HibernateDAO dao;
 
+    public void validate(Scene scene) throws Exception {
+        update(scene);
+        IndisponibilitePlateau indisponibilitePlateau = new IndisponibilitePlateau();
+        indisponibilitePlateau.setIdPlateau(scene.getPlateau().getIdPlateau());
+        indisponibilitePlateau.setDateDebut(scene.getDebutTournage());
+        indisponibilitePlateau.setDateFin(scene.getFinTournage());
+        indisponibilitePlateau.setMotif("tournage");
+        dao.save(indisponibilitePlateau);
+    }
+
     public void update(Scene scene) throws Exception {
         dao.update(scene);
     }
@@ -21,7 +31,27 @@ public class SceneService {
         return dao.findOneById(new Scene(),Integer.valueOf(id));
     }
 
+    public List<Scene> findAllPlannedScene(Timestamp dateDebut , Timestamp dateFin) {
+        Session session = dao.getSessionFactory().openSession();
+        List<Scene> sceneList = null;
+        try {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Scene> criteriaQuery = builder.createQuery(Scene.class);
+            // init query
+            Root<Scene> model = criteriaQuery.from(Scene.class);
+            // condition(s)
+            criteriaQuery.where(builder.between(model.get("debutTournage"),dateDebut,dateFin));
+            // ordering
+            // criteriaQuery.orderBy(builder.desc(model.get("projet").get("id_projet")));
+            sceneList = session.createQuery(criteriaQuery).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) session.close();
+        }
 
+        return sceneList;
+    }
     public  ArrayList<Scene> findByProject(Projet projet) throws Exception{
         ArrayList<Scene> ls=dao.findAll(new Scene());
         ArrayList<Scene> turn=new ArrayList<>();
@@ -40,6 +70,8 @@ public class SceneService {
 
     public ArrayList<Scene> suggestion(ArrayList<Scene> liste,Timestamp debut,Timestamp fin) throws  Exception{
         ArrayList<Scene> sugg=new ArrayList<>();
+        List<IndisponibilitePlateau> idPlateau = findAllIndisponibilitePlateauBetween(debut, fin);
+        List<IndisponibiliteActeur> idActeur = findAllIndisponibiliteActeurBetween(debut, fin);
         int tour=0;
         float duree=(float)0;
         HashMap<Plateau, ArrayList<Scene>> map=Plateau.sceneParPlateau(dao.findAll(new Plateau()),liste);
@@ -55,7 +87,7 @@ public class SceneService {
                 ArrayList<Scene> ls=map.get(p);
                 for(Scene sc: ls){
                     if(sc.getDebutTournage()==null) {
-                        Object[] ob=changeDateTournage(sc, debut, ls, sugg, duree,tour);
+                        Object[] ob=changeDateTournage(sc, debut, sugg, duree,tour, idPlateau, idActeur);
                         debut=(Timestamp) ob[0];
                         duree=(float)ob[1];
                         tour=(int)ob[2];
@@ -67,9 +99,14 @@ public class SceneService {
         return sugg;
     }
 
-    private Object[] changeDateTournage(Scene sc,Timestamp dt,ArrayList<Scene> scene,ArrayList<Scene> sugg,float duree,int tour) {
+    private Object[] changeDateTournage(Scene sc,Timestamp dt,ArrayList<Scene> sugg,float duree,int tour,
+                                        List<IndisponibilitePlateau> iPlateau,List<IndisponibiliteActeur> iActeur) throws Exception{
+        ArrayList<Personnage> acteur=dao.findAll(new Personnage());
         Time last=new Time(dt.getHours(),dt.getMinutes(),dt.getSeconds());
-        if(last.before(sc.getFinTournagePreferable())&&((duree+sc.getDuration())<=8.0)){
+        float duration=sc.getEstimationTournage().getHours();
+        duration=duration+(sc.getEstimationTournage().getMinutes()/60);
+        if(last.before(sc.getFinTournagePreferable())&&((duree+duration)<=8.0)&&
+                dispoActeur(dt,iActeur,acteur)&&dispoPlateau(dt,iPlateau,sc.getPlateau())){
             if(last.after(sc.getDebutTournagePreferable())||last.compareTo(sc.getDebutTournagePreferable())==0||
                     sc.getDebutTournagePreferable()==null)
                 sc.setDebutTournage(dt);
@@ -91,7 +128,7 @@ public class SceneService {
         return turn;
     }
 
-    private Timestamp changeDate(Timestamp last) {
+    private Timestamp changeDate(Timestamp last){
         Calendar cal=Calendar.getInstance();
         cal.setTimeInMillis(last.getTime());
         cal.add(Calendar.DAY_OF_MONTH,1);
@@ -115,5 +152,22 @@ public class SceneService {
         Scene sc=scene.get(scene.size()-1);
         if(sc.getFinTournage().after(fin))
             throw new Exception("Emploie du temps surchargé");
+    }
+    private boolean dispoPlateau(Timestamp tm,List<IndisponibilitePlateau> pl,Plateau plateau){
+        for(IndisponibilitePlateau p:pl){
+            if((p.getDateDebut().before(tm)||tm.equals(p.getDateDebut()))&&(p.getDateFin().after(tm)||tm.equals(p.getDateFin()))
+                    &&plateau.getIdPlateau()==p.getIdPlateau())
+                return false;
+        }
+        return true;
+    }
+    private boolean dispoActeur(Timestamp tm,List<IndisponibiliteActeur> ac,List<Personnage> acteur){
+        for(Personnage pc:acteur ){
+            for(IndisponibiliteActeur p:ac){
+                if(p.getIdActeur()==pc.getIdActeur()&&p.getDateDebut().before(tm)&&p.getDateFin().after(tm))
+                    return false;
+            }
+        }
+        return true;
     }
 }

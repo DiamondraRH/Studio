@@ -24,49 +24,72 @@
                         <!-- /.card-header -->
                         <div class="card-body">
                             <form action="${pageContext.request.contextPath}/validerPlanning/" method="post">
-                            <table class="table">
-                                <thead>
-                                <tr>
-                                    <th>Scenes</th>
-                                    <th>Plateau</th>
-                                    <th>Debut tournage</th>
-                                    <th>Fin tournage</th>
-                                </tr>
-                                </thead>
-
-                                <tbody>
-                                <c:forEach items="${scenes}" var="scene" varStatus="loop">
+                                <table class="table">
+                                    <thead>
                                     <tr>
-                                        <td>
-                                            <div>
-                                                <label class="flex items-center dark:text-gray-400">
-                                                    <input
-                                                            id="check-${loop.index}"
-                                                            type="checkbox"
-                                                            checked
-                                                            value="${scene.idScene};${scene.debutTournage};${scene.finTournage}"
-                                                            name="scenes"
-                                                            class="text-purple-600 form-checkbox focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
-                                                    />
-                                                    <span class="ml-2 text-sm font-semibold">
-                                                            ${scene.titre}
-                                                    </span>
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td>
-                                                ${scene.plateau.lieu} (N°${scene.plateau.numero})
-                                        </td>
-                                        <td>
-                                                ${scene.debutTournage}
-                                        </td>
-                                        <td>
-                                                ${scene.finTournage}
-                                        </td>
+                                        <th>Scenes</th>
+                                        <th>Plateau</th>
+                                        <th>Debut tournage</th>
+                                        <th>Fin tournage</th>
                                     </tr>
-                                </c:forEach>
-                                </tbody>
-                            </table>
+                                    </thead>
+
+                                    <tbody>
+                                    <c:forEach items="${planned}" var="scene" varStatus="loop">
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <label class="flex items-center dark:text-gray-400">
+                                                        <span><i class="bi bi-check"></i></span>
+                                                        <span class="ml-2 text-sm font-semibold">
+                                                                ${scene.titre}
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                    ${scene.plateau.lieu} (N°${scene.plateau.numero})
+                                            </td>
+                                            <td>
+                                                    ${scene.debutTournage}
+                                            </td>
+                                            <td>
+                                                    ${scene.finTournage}
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    <c:forEach items="${scenes}" var="scene" varStatus="loop">
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <label class="flex items-center dark:text-gray-400">
+                                                        <input
+                                                                id="check-${loop.index}"
+                                                                type="checkbox"
+                                                                checked
+                                                                value="${scene.idScene};${scene.debutTournage};${scene.finTournage}"
+                                                                name="scenes"
+                                                                class="text-purple-600 form-checkbox focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+                                                        />
+                                                        <span class="ml-2 text-sm font-semibold">
+                                                                ${scene.titre}
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                    ${scene.plateau.lieu} (N°${scene.plateau.numero})
+                                            </td>
+                                            <td>
+                                                    ${scene.debutTournage}
+                                            </td>
+                                            <td>
+                                                    ${scene.finTournage}
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
                                 <div class="w-full overflow-hidden rounded-lg shadow-xs">
                                     <div class="w-full overflow-x-auto">
 

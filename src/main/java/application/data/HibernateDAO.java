@@ -214,6 +214,22 @@ public class HibernateDAO implements InterfaceDAO {
         }
     }
 
+    public <T> ArrayList<T> find(T obj, Object condition) throws Exception {
+        Session s=null;
+        Criterion criterion=null;
+        try {
+            s=getSession();
+            if (condition instanceof Criterion) {
+                criterion=(Criterion) condition;
+            }
+            Criteria criteria_result=s.createCriteria(obj.getClass());
+            if (condition!=null) criteria_result=criteria_result.add(criterion);
+            return (ArrayList<T>) criteria_result.list();
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
     @Override
     public <T> ArrayList<T> find(T obj, Object condition) throws Exception {
         Session s=null;
@@ -316,7 +332,6 @@ public class HibernateDAO implements InterfaceDAO {
             if(s!=null)s.close();
         }
     }
-
 
     @Override
     public <T> HashMap<String, Object> whereClauseWithRowCount(T obj, int page, int pageSize, Object condition, Order order) throws Exception {

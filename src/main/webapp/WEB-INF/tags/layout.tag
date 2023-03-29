@@ -38,7 +38,7 @@
 
     <jsp:include page="/WEB-INF/tags/header.jsp" />
 
-    <jsp:include page="/WEB-INF/tags/navbar.jsp" />
+<%--    <jsp:include page="/WEB-INF/tags/navbar.jsp" />--%>
 
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">

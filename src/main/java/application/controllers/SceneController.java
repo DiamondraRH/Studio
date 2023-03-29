@@ -3,6 +3,7 @@ package application.controllers;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 import application.models.Projet;
 import application.services.SceneService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.ModelAndView;
 import application.models.Scene;
 import org.springframework.web.bind.annotation.PostMapping;
+
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -52,10 +54,15 @@ public class SceneController {
         debut = debut + " 08:00:00";
         fin = fin + " 23:59:59";
 
+        List<Scene> planned = service.findAllPlannedScene(Timestamp.valueOf(debut) , Timestamp.valueOf(fin));
         ArrayList<Scene> planning = service.suggestion(scenes , Timestamp.valueOf(debut) , Timestamp.valueOf(fin));
+        List<Scene> all = new ArrayList<Scene>();
+        all.addAll(planned);
+        all.addAll(planning);
         ModelAndView modelAndView = new ModelAndView("valider-planning");
         modelAndView.addObject("scenes" , planning);
-        modelAndView.addObject("events",Scene.toJSONCallendar(planning));
+        modelAndView.addObject("events",Scene.toJSONCallendar(all));
+        modelAndView.addObject("planned" , planned);
         return modelAndView;
     }
 
@@ -68,7 +75,7 @@ public class SceneController {
             Scene scene = service.findById(values[0]);
             scene.setDebutTournage(values[1]);
             scene.setFinTournage(values[2]);
-            service.update(scene);
+            service.validate(scene);
         }
 
         //redirect To Main Calendar
